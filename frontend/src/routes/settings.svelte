@@ -1,3 +1,7 @@
+<svelte:head>
+    <title>Settings</title>
+</svelte:head>
+
 <script>
     import MinInput from "$lib/MinInput.svelte";
     import RadioBtns from "$lib/RadioBtns.svelte";

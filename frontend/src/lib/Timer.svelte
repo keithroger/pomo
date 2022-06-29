@@ -41,6 +41,11 @@
             initialTime = new Date();
         }
 
+        // Check if countdown is already finished
+        if (timeRemaining < 0) {
+            return;
+        }
+
         let end = Date.now() + timeRemaining;
         clearInterval(interval);
         interval = setInterval(() => {
@@ -49,8 +54,6 @@
 			circleLength = circumference * (timeRemaining/timeTotal);
 			if (timeRemaining < 0) {
                 pomoComplete();
-                // TODO prevent double recording if completed
-                // make start button not work if it is at zero time
 			}
         }, 100);
     }

@@ -25,8 +25,5 @@ export async function userAPI(method, path, body) {
         data: body,
     });
 
-    // TODO remove
-    console.log(await getUsername());
-
     return resp.data;
 }

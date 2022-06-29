@@ -11,14 +11,14 @@
 	const parser = d3.timeParse("%Y-%m-%d");
 	data = data.map(d => {
 		return {
-			date: d.date.substring(6,7) + "/" + d.date.substring(8,10),
+			date: parser(d.date.substring(0, 10)),
 			minutes: d.minutes,
 		}
 	});
 	console.log(data);
 
 	let viz;
-	let margin = {top: 10, right: 30, bottom: 60, left: 60},
+	let margin = {top: 10, right: 30, bottom: 30, left: 60},
     width = 580 - margin.left - margin.right,
     height = 300 - margin.top - margin.bottom;
 

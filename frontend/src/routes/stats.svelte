@@ -1,26 +1,26 @@
+<svelte:head>
+    <title>Stats</title>
+</svelte:head>
+
 <script>
     import { userAPI } from "$lib/requests.js"
     import StatSquare from "$lib/StatSquare.svelte";
     import RadioBtns from "$lib/RadioBtns.svelte";
     import Visualization from "$lib/Visualization.svelte";
     import { pomodoros, contentLoading } from "$lib/store.js";
-    import { getGraphData } from "$lib/statsprocessing.js";
-
-    // TODO if no data, then display "No data to display."
-    // TODO make data update sections
 
     // Retrieve data from database.
     async function getData() {
         contentLoading.set(true);
 
         const resp = await userAPI("get", "/stats", null);
-        pomodoros.set(resp);
+        console.log(resp);
+        // pomodoros.set(resp);
 
-        const data = getGraphData($pomodoros);
 
         contentLoading.set(false);
 
-        return data;
+        return resp;
     }
 
 </script>
@@ -32,13 +32,13 @@
         pomodoro counts towards your stats.
     </p>
 
-    {#await getData() then graphData}
+    {#await getData() then resp}
 
-    {#if $pomodoros.length > 0}
+    <!-- {#if $pomodoros.length > 0} -->
 
     <h3>Period of Time</h3>
     <RadioBtns
-        values={["Week", "Month", "Year"]}
+        values={["7 days", "30 days", "90 days"]}
         name="period"
         selected="all"
         nPerRow=3
@@ -53,22 +53,21 @@
 
     <!-- Avg  study time by hour of the day -->
 
-    <Visualization data={graphData.threemonths}/>
+    <Visualization data={resp.Bar7Day}/>
 
     <div class="grid">
-        <StatSquare label="Today" stat="3"/>
-        <StatSquare label="Last Week" stat="30"/>
-        <StatSquare label="Last Month" stat="70"/>
-        <StatSquare label="Last Year" stat="700"/>
-        <StatSquare label="All Time" stat="2222"/>
-        <StatSquare label="Most Time Day" stat="20h"/>
-        <StatSquare label="Total Time" stat="1d 2h 10m"/>
-        <StatSquare label="Avg Time" stat="30m"/>
+        <!-- TODO convert to readable format such as 1d 2h 30m -->
+        <StatSquare label="Today" stat="{resp.Today}m"/>
+        <StatSquare label="Last Week" stat="{resp.Week}m"/>
+        <StatSquare label="Last Month" stat="{resp.Month}m"/>
+        <StatSquare label="Last Year" stat="{resp.Year}m"/>
+        <StatSquare label="All Time" stat="{resp.All}m"/>
+        <StatSquare label="Avg" stat="{resp.AllAvg}m"/>
     </div>
 
-    {:else}
+    <!-- {:else}
     <p>No data yet. Complete pomodoros to see some stats!</p>
-    {/if}
+    {/if} -->
 
     {:catch error}
 
