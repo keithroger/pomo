@@ -256,7 +256,7 @@ func TestTotals(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			total, err := Totals(tc.rows, tc.n)
+			total, err := TotalMinutes(tc.rows, tc.n)
 			if err != nil {
 				t.Error(err)
 			}

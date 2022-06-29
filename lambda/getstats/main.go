@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/aws/aws-lambda-go/lambda"
@@ -39,11 +38,10 @@ type Row struct {
 }
 
 type Response struct {
-	BarData                       []BarData
-	WeekdayData                   []BarData
-	Today, Week, Month, Year, All string
-	TodayAvg, WeekAvg, MonthAvg   float32 // for days studied
-	YearAvg, AllAvg               float32
+	Bar7Day, Bar30Day, Bar90Day   []BarData
+	WeekdayData                   []WeeklyData
+	Today, Week, Month, Year, All int
+	AllAvg                        float32
 }
 
 var (
@@ -52,6 +50,7 @@ var (
 
 // TODO make a struct to convert rows to have time.Time objects
 // TODO clean up code and efficiency
+// TODO add averages for different intervals
 
 func init() {
 	cfg, err := config.LoadDefaultConfig(context.TODO(), func(o *config.LoadOptions) error {
@@ -71,7 +70,7 @@ func parse(timeStr string) (time.Time, error) {
 
 }
 
-func HandleRequest(ctx context.Context, username Event) (string, error) {
+func HandleRequest(ctx context.Context, username Event) (Response, error) {
 
 	out, err := ddb.Query(context.TODO(), &dynamodb.QueryInput{
 		TableName:              aws.String("pomo-study-user-stats"),
@@ -92,9 +91,48 @@ func HandleRequest(ctx context.Context, username Event) (string, error) {
 		panic(err)
 	}
 
-	// TODO make functions for finding the other statistics
+	// TODO refactor code to prevent needing to handle errors every time
+	Bar7Day, err := GetBarData(rows, 7)
+	checkErr(err)
+	Bar30Day, err := GetBarData(rows, 30)
+	checkErr(err)
+	Bar90Day, err := GetBarData(rows, 90)
+	checkErr(err)
+	WeekdayData, err := GetWeeklyData(rows)
+	checkErr(err)
+	// TODO put all the totals together in a struct
+	Today, err := TotalMinutes(rows, 1)
+	checkErr(err)
+	Week, err := TotalMinutes(rows, 7)
+	checkErr(err)
+	Month, err := TotalMinutes(rows, 30)
+	checkErr(err)
+	// TODO account for leap years
+	Year, err := TotalMinutes(rows, 365)
+	checkErr(err)
+	All, err := TotalMinutes(rows, len(rows))
+	checkErr(err)
 
-	return fmt.Sprintf("Hello %s!", username.Username), nil
+	resp := Response{
+		Bar7Day:     Bar7Day,
+		Bar30Day:    Bar30Day,
+		Bar90Day:    Bar90Day,
+		WeekdayData: WeekdayData,
+		Today:       Today,
+		Week:        Week,
+		Month:       Month,
+		Year:        Year,
+		All:         All,
+		AllAvg:      float32(All) / float32(len(rows)),
+	}
+
+	return resp, nil
+}
+
+func checkErr(err error) {
+	if err != nil {
+		panic(err)
+	}
 }
 
 // TODO user userinput date otherwise it will be according to servers date
@@ -177,16 +215,11 @@ func GetWeeklyData(rows []Row) ([]WeeklyData, error) {
 		weeklyBars[int(weekday)].Minutes += bar.Minutes
 	}
 
-	// print
-	for _, bar := range weeklyBars {
-		fmt.Println(bar)
-	}
-
 	return weeklyBars, nil
 }
 
 // totals gets the total minutes studied in the last n days
-func Totals(rows []Row, n int) (int, error) {
+func TotalMinutes(rows []Row, n int) (int, error) {
 	total := 0
 	threshold := midnight(time.Now()).AddDate(0, 0, -n+1)
 
