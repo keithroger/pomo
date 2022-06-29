@@ -1,0 +1,15 @@
+## mapping template for PUT /{username}/settings
+
+{
+	"TableName": "pomo-study-user-settings",
+	"Item": {
+        "username": {"S": "$context.authorizer.claims.sub"},
+		"pomodoro": {"N": "$input.path('$.pomodoro')"},
+		"shortBreak": {"N": "$input.path('$.shortBreak')"},
+		"longBreak": {"N": "$input.path('$.longBreak')"},
+		"theme": {"S": "$input.path('$.theme')"},
+		"sound": {"S": "$input.path('$.sound')"},
+		"volume": {"S": "$input.path('$.volume')"}
+
+    }
+}

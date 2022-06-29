@@ -1,0 +1,10 @@
+## mapping template for PUT /{username}/settings
+
+{
+	"pomodoro": $input.path('$.Item.pomodoro.N'),
+	"shortBreak": $input.path('$.Item.shortBreak.N'),
+	"longBreak": $input.path('$.Item.longBreak.N'),
+	"theme": "$input.path('$.Item.theme.S')",
+	"sound": "$input.path('$.Item.sound.S')",
+	"volume": "$input.path('$.Item.volume.S')"
+}

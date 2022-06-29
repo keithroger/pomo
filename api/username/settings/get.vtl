@@ -1,0 +1,8 @@
+## mapping template for GET /{username}/settings
+
+{
+	"TableName": "pomo-study-user-settings",
+	"Key": {
+        "username": {"S": "$context.authorizer.claims.sub"}
+    }
+}

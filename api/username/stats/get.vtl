@@ -1,0 +1,6 @@
+## mapping template for GET /{username}/stats
+## sent to a lambda function
+
+{
+    ":username": "$context.authorizer.claims.sub"
+}

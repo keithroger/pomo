@@ -1,0 +1,10 @@
+## mapping template for POST /{username}/stats
+
+{
+	"TableName": "pomo-study-user-stats",
+	"Item": {
+        "username": {"S": "$context.authorizer.claims.sub"},
+		"timestamp": {"S": "$input.path('$.timestamp')"},
+		"minutes": {"N": "$input.path('$.minutes')"}
+    }
+}

@@ -1,0 +1,11 @@
+## mapping template for POST /{username}/stats
+
+[
+    #foreach( $item in $input.path('$.Items') )
+    {
+        "timestamp": "$item.timestamp.S",
+        "minutes": $item.minutes.N
+    }#if($foreach.hasNext),#end
+
+    #end
+]
