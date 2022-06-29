@@ -28,18 +28,30 @@ type BarData struct {
 	Minutes int    `json:"minutes"`
 }
 
+type WeeklyData struct {
+	Weekday string `json:"weekday"`
+	Minutes int    `json:"minutes"`
+}
+
 type Row struct {
 	Timestamp string `json:"timestamp"`
 	Minutes   int    `json:"minutes"`
 }
 
 type Response struct {
-	bar []BarData
+	BarData                       []BarData
+	WeekdayData                   []BarData
+	Today, Week, Month, Year, All string
+	TodayAvg, WeekAvg, MonthAvg   float32 // for days studied
+	YearAvg, AllAvg               float32
 }
 
 var (
 	ddb *dynamodb.Client
 )
+
+// TODO make a struct to convert rows to have time.Time objects
+// TODO clean up code and efficiency
 
 func init() {
 	cfg, err := config.LoadDefaultConfig(context.TODO(), func(o *config.LoadOptions) error {
@@ -80,6 +92,8 @@ func HandleRequest(ctx context.Context, username Event) (string, error) {
 		panic(err)
 	}
 
+	// TODO make functions for finding the other statistics
+
 	return fmt.Sprintf("Hello %s!", username.Username), nil
 }
 
@@ -91,7 +105,8 @@ func midnight(t time.Time) time.Time {
 	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC)
 }
 
-func getBarData(rows []Row, n int) ([]BarData, error) {
+// GetBarData calculates the number of minutes studied during n days.
+func GetBarData(rows []Row, n int) ([]BarData, error) {
 	// get todays date at midnight
 	today := midnight(time.Now())
 
@@ -110,12 +125,6 @@ func getBarData(rows []Row, n int) ([]BarData, error) {
 			rows = rows[i:]
 			break
 		}
-	}
-
-	// testing
-	fmt.Println("Rows left")
-	for _, row := range rows {
-		fmt.Println(row)
 	}
 
 	// initialize dates
@@ -137,20 +146,6 @@ func getBarData(rows []Row, n int) ([]BarData, error) {
 
 		minuteCount[date.String()] += row.Minutes
 
-		// i=0 : -7+0+2=-5
-		// i=1 : -7+1+2=-4
-		// i=2 : -7+2+2=-3
-		// i=3 : -7+3+2=-2
-		// i=4 : -7+4+2=-1
-		// i=5 : -7+5+2= 0
-		// i=6 : -7+6+2=+1
-		// fmt.Printf("idx: %d\tdate: %s\n", barIdx, today.AddDate(0, 0, -n+barIdx+2).String())
-
-		// for date.After(today.AddDate(0, 0, -n+barIdx+2)) {
-		// 	barIdx++
-		// }
-
-		// bars[barIdx].Minutes += row.Minutes
 	}
 
 	for i := range bars {
@@ -158,6 +153,57 @@ func getBarData(rows []Row, n int) ([]BarData, error) {
 	}
 
 	return bars, nil
+}
+
+func GetWeeklyData(rows []Row) ([]WeeklyData, error) {
+	bars, err := GetBarData(rows, 30)
+	if err != nil {
+		return []WeeklyData{}, err
+	}
+
+	// initialize days of the week
+	weeklyBars := make([]WeeklyData, 7)
+	for i := 0; i < 7; i++ {
+		weeklyBars[i].Weekday = time.Weekday(i).String()[:3]
+	}
+
+	// add minutes to the corisponding weekday count
+	for _, bar := range bars {
+		date, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", bar.Date)
+		if err != nil {
+			return []WeeklyData{}, err
+		}
+		weekday := date.Weekday()
+		weeklyBars[int(weekday)].Minutes += bar.Minutes
+	}
+
+	// print
+	for _, bar := range weeklyBars {
+		fmt.Println(bar)
+	}
+
+	return weeklyBars, nil
+}
+
+// totals gets the total minutes studied in the last n days
+func Totals(rows []Row, n int) (int, error) {
+	total := 0
+	threshold := midnight(time.Now()).AddDate(0, 0, -n+1)
+
+	for i := len(rows) - 1; i >= 0; i-- {
+		date, err := parse(rows[i].Timestamp)
+		if err != nil {
+			return 0, err
+		}
+		if date.After(threshold) {
+			total += rows[i].Minutes
+		} else {
+			break
+		}
+
+	}
+
+	return total, nil
 }
 
 func main() {

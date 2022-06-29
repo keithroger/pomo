@@ -9,6 +9,7 @@ import (
 // TODO add test case with 0 rows
 // TODO test a range with dates far in the past
 // TODO add test with gaps between days
+// TODO update test cases so the dates are automatically updated
 
 func TestRowsToBars(t *testing.T) {
 
@@ -121,9 +122,9 @@ func TestRowsToBars(t *testing.T) {
 		tc := tc // capture variable
 
 		t.Run(tc.name, func(t *testing.T) {
-			// t.Parallel()
+			t.Parallel()
 
-			bars, err := getBarData(tc.rows, 7)
+			bars, err := GetBarData(tc.rows, 7)
 			if err != nil {
 				t.Error(err)
 			}
@@ -143,4 +144,127 @@ func TestRowsToBars(t *testing.T) {
 		})
 	}
 
+}
+
+func TestGetWeeklyData(t *testing.T) {
+	tt := []struct {
+		name string
+		rows []Row
+		want []WeeklyData
+	}{
+
+		{
+			name: "only monday",
+			rows: []Row{
+				{"2022-06-27T07:16:11.125Z", 1},
+				{"2022-06-27T09:19:55.747Z", 2},
+				{"2022-06-27T21:44:54.892Z", 3},
+			},
+			want: []WeeklyData{
+				{"Sun", 0},
+				{"Mon", 6},
+				{"Tue", 0},
+				{"Wed", 0},
+				{"Thu", 0},
+				{"Fri", 0},
+				{"Sat", 0},
+			},
+		}, {
+			name: "only monday",
+			rows: []Row{
+				{"2022-06-26T07:16:11.125Z", 1},
+				{"2022-06-27T07:16:11.125Z", 1},
+				{"2022-06-27T09:19:55.747Z", 2},
+				{"2022-06-27T21:44:54.892Z", 3},
+				{"2022-06-28T21:44:54.892Z", 3},
+			},
+			want: []WeeklyData{
+				{"Sun", 1},
+				{"Mon", 6},
+				{"Tue", 3},
+				{"Wed", 0},
+				{"Thu", 0},
+				{"Fri", 0},
+				{"Sat", 0},
+			},
+		},
+	}
+
+	for _, tc := range tt {
+		tc := tc // capture variable
+
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			bars, err := GetWeeklyData(tc.rows)
+			if err != nil {
+				t.Error(err)
+			}
+
+			if !reflect.DeepEqual(bars, tc.want) {
+				fmt.Println("got:")
+				for _, bar := range bars {
+					fmt.Println(bar.Weekday, bar.Minutes)
+				}
+				fmt.Println("want:")
+				for _, bar := range tc.want {
+					fmt.Println(bar.Weekday, bar.Minutes)
+				}
+
+				t.Error("got != want")
+			}
+		})
+	}
+
+}
+
+func TestTotals(t *testing.T) {
+	tt := []struct {
+		name string
+		n    int
+		rows []Row
+		want int
+	}{
+
+		{
+			name: "only monday",
+			n:    7,
+			rows: []Row{
+				{"2021-06-27T07:16:11.125Z", 1},
+				{"2022-06-27T07:16:11.125Z", 1},
+				{"2022-06-27T09:19:55.747Z", 2},
+				{"2022-06-27T21:44:54.892Z", 3},
+			},
+			want: 6,
+		}, {
+			name: "only monday",
+			n:    1,
+			rows: []Row{
+				{"2022-06-26T07:16:11.125Z", 1},
+				{"2022-06-27T07:16:11.125Z", 1},
+				{"2022-06-27T09:19:55.747Z", 2},
+				{"2022-06-27T21:44:54.892Z", 3},
+				{"2022-06-28T21:44:54.892Z", 3},
+			},
+			want: 3,
+		},
+	}
+
+	for _, tc := range tt {
+		tc := tc // capture variable
+
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			total, err := Totals(tc.rows, tc.n)
+			if err != nil {
+				t.Error(err)
+			}
+
+			if total != tc.want {
+				fmt.Println("got:")
+				t.Errorf("got: %d\twant: %d\n", total, tc.want)
+			}
+		})
+	}
 }
