@@ -7,14 +7,7 @@
 	export let data;
 	console.log(data);
 
-	// TODO parse dates
-	const parser = d3.timeParse("%Y-%m-%d");
-	data = data.map(d => {
-		return {
-			date: parser(d.date.substring(0, 10)),
-			minutes: d.minutes,
-		}
-	});
+	// TODO create weekday graph
 	console.log(data);
 
 	let viz;
@@ -31,7 +24,7 @@
 			.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 		let xScale = d3.scaleBand()
-			.domain(data.map(d => d.date))
+			.domain(data.map(d => d.weekday))
 			.range([0, width])
 			.padding(0.25);
 			// .tickValues(data) // add for custom values
@@ -39,12 +32,12 @@
 
 		svg.append("g")
 			.attr("transform", "translate(0," + height + ")")
-			.call(d3.axisBottom(xScale))
-			.selectAll("text")  
-            .style("text-anchor", "end")
-            .attr("dx", "-.8em")
-            .attr("dy", ".15em")
-            .attr("transform", "rotate(-65)" );
+			.call(d3.axisBottom(xScale));
+			// .selectAll("text")  
+            // .style("text-anchor", "end")
+            // .attr("dx", "-.8em")
+            // .attr("dy", ".15em")
+            // .attr("transform", "rotate(-65)" );
 
 		let yScale = d3.scaleLinear()
 			.domain([0, d3.max(data, d => d.minutes)])
@@ -68,7 +61,7 @@
 			.data(data)
 			.enter()
 			.append("rect")
-			.attr("x", d => xScale(d.date))
+			.attr("x", d => xScale(d.weekday))
 			.attr("y", d => yScale(d.minutes))
 			.attr("width", xScale.bandwidth())
 			.attr("height", d => height - yScale(d.minutes))

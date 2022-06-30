@@ -7,7 +7,8 @@
 	export let data;
 	console.log(data);
 
-	// TODO parse dates
+	// TODO add y axis label
+
 	const parser = d3.timeParse("%Y-%m-%d");
 	data = data.map(d => {
 		return {
@@ -34,8 +35,6 @@
 			.domain(data.map(d => d.date))
 			.range([0, width])
 			.padding(0.25);
-			// .tickValues(data) // add for custom values
-			// .tickFormat(d => (d.year +":"+ d.val));
 
 		svg.append("g")
 			.attr("transform", "translate(0," + height + ")")

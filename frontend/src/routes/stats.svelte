@@ -7,7 +7,11 @@
     import StatSquare from "$lib/StatSquare.svelte";
     import RadioBtns from "$lib/RadioBtns.svelte";
     import Visualization from "$lib/Visualization.svelte";
+    import WeekdayViz from "$lib/WeekdayViz.svelte";
     import { pomodoros, contentLoading } from "$lib/store.js";
+
+    // Time period selection for bar graph
+    let period = "7 Days";
 
     // Retrieve data from database.
     async function getData() {
@@ -15,8 +19,6 @@
 
         const resp = await userAPI("get", "/stats", null);
         console.log(resp);
-        // pomodoros.set(resp);
-
 
         contentLoading.set(false);
 
@@ -34,13 +36,17 @@
 
     {#await getData() then resp}
 
+    {#if resp.lenght == 0}
+    <p>No data yet. Complete pomodoros to see some stats!</p>
+    {/if}
     <!-- {#if $pomodoros.length > 0} -->
 
     <h3>Period of Time</h3>
+    <p>View the number of minutes studied in a given period.</p>
     <RadioBtns
-        values={["7 days", "30 days", "90 days"]}
+        values={["7 Days", "14 Days", "30 Days"]}
         name="period"
-        selected="all"
+        bind:selected={period}
         nPerRow=3
     />
 
@@ -53,7 +59,13 @@
 
     <!-- Avg  study time by hour of the day -->
 
-    <Visualization data={resp.Bar7Day}/>
+    {#key period}
+    <Visualization data={resp[period]}/>
+    {/key}
+
+    <h3>Weekday Summary</h3>
+    <p>The total minutes studied during the last 30 days, grouped by day of the week.</p>
+    <WeekdayViz data={resp.WeekdayData}/>
 
     <div class="grid">
         <!-- TODO convert to readable format such as 1d 2h 30m -->
@@ -65,9 +77,6 @@
         <StatSquare label="Avg" stat="{resp.AllAvg}m"/>
     </div>
 
-    <!-- {:else}
-    <p>No data yet. Complete pomodoros to see some stats!</p>
-    {/if} -->
 
     {:catch error}
 

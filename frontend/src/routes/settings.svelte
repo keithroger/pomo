@@ -9,13 +9,15 @@
     import { settings, isAuthenticated} from "$lib/store.js";
     import { setCSS } from "$lib/colors.js";
 
+    // TODO change the way variables are reactive
+
     let pomodoroInput = $settings.pomodoro.toString();
     let shortBreakInput = $settings.shortBreak.toString();
     let longBreakInput = $settings.longBreak.toString();
 
     const options = {
         theme: ["Default", "Shore", "Cold", "Slate", "Ocean", "Pumkin", "Pastel", "Night", "Pink", "Lettuce", "Purp", "Cream", "Little", "Cafe", "Contrast", "Eve"],
-        sound: ["Bell", "Chime", "Bowl", "Beep"],
+        sound: ["8bit", "Bike", "Bowl", "Cathedral", "Coin", "Correct", "Ding", "Dingdong", "Hibell", "Lowbell", "Notify", "Peaceful", "Ping", "Pling"],
         volume: ["Mute", "Low", "Medium", "High"],
     };
 
@@ -52,6 +54,37 @@
     $: {
         setCSS($settings.theme);
     }
+
+
+
+    const audio = new Map();
+    options.sound.forEach(elem => audio.set(elem, new Audio("/sounds/" + elem + ".mp3")))
+    const volume = new Map([
+        ["Mute", 0],
+        ["Low", 0.4],
+        ["Medium", 0.7],
+        ["High", 1.0],
+    ]);
+
+    // TODO make sounds play on click instead of on change
+    function playSound() {
+        audio.get($settings.sound).volume = volume.get($settings.volume);
+        audio.get($settings.sound).currentTime = 0;
+        audio.get($settings.sound).play();
+    }
+
+    let currentSound = $settings.sound
+    $: if (currentSound != $settings.sound) {
+        playSound();
+        currentSound = $settings.sound;
+    }
+
+    let currentVol = $settings.volume
+    $: if (currentVol != $settings.volume) {
+        playSound();
+        currentVol = $settings.volume;
+    }
+
 
 </script>
 
@@ -97,7 +130,6 @@
 
     <h3>Sound</h3>
     <p>Pick a sound to play when you complete a pomodoro.</p>
-        <!-- TODO make an async request to sound folder in s3 -->
     <RadioBtns
         name="sound-type"
         values={options.sound}
@@ -114,6 +146,7 @@
         bind:selected={$settings.volume}
     />
 
+    <!-- TODO test danger zone -->
     {#if $isAuthenticated }
     <h2>Danger Zone</h2>
 

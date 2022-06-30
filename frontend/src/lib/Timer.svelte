@@ -7,6 +7,16 @@
     let timeStr;
     let timeRemaining;
 
+    // Setup audio
+    let audio = new Audio("/sounds/" + $settings.sound + ".mp3")
+    const volume = new Map([
+        ["Mute", 0],
+        ["Low", 0.4],
+        ["Medium", 0.7],
+        ["High", 1.0],
+    ]);
+    audio.volume = volume.get($settings.volume);
+
     // Update timer based on mode selected
     let selected = "Pomodoro";
     $: selected, selectionUpdate();
@@ -81,9 +91,11 @@
         return (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
     }
 
+    // TODO play sound on complete
     // Run when pomodoro is completed
     function pomoComplete() {
         clearInterval(interval);
+        audio.play();
         timeStr = "00:00";
         circleLength = 0;
         

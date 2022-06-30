@@ -37,8 +37,11 @@ type Row struct {
 	Minutes   int    `json:"minutes"`
 }
 
+// TODO make numbers into formated strings
 type Response struct {
-	Bar7Day, Bar30Day, Bar90Day   []BarData
+	Bar7Day                       []BarData `json:"7 Days"`
+	Bar14Day                      []BarData `json:"14 Days"`
+	Bar30Day                      []BarData `json:"30 Days"`
 	WeekdayData                   []WeeklyData
 	Today, Week, Month, Year, All int
 	AllAvg                        float32
@@ -94,9 +97,9 @@ func HandleRequest(ctx context.Context, username Event) (Response, error) {
 	// TODO refactor code to prevent needing to handle errors every time
 	Bar7Day, err := GetBarData(rows, 7)
 	checkErr(err)
-	Bar30Day, err := GetBarData(rows, 30)
+	Bar14Day, err := GetBarData(rows, 14)
 	checkErr(err)
-	Bar90Day, err := GetBarData(rows, 90)
+	Bar30Day, err := GetBarData(rows, 30)
 	checkErr(err)
 	WeekdayData, err := GetWeeklyData(rows)
 	checkErr(err)
@@ -115,8 +118,8 @@ func HandleRequest(ctx context.Context, username Event) (Response, error) {
 
 	resp := Response{
 		Bar7Day:     Bar7Day,
+		Bar14Day:    Bar14Day,
 		Bar30Day:    Bar30Day,
-		Bar90Day:    Bar90Day,
 		WeekdayData: WeekdayData,
 		Today:       Today,
 		Week:        Week,
