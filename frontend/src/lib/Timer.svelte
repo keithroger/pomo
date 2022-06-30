@@ -16,7 +16,7 @@
         ["High", 1.0],
     ]);
     audio.volume = volume.get($settings.volume);
-
+    
     // Update timer based on mode selected
     let selected = "Pomodoro";
     $: selected, selectionUpdate();
@@ -91,7 +91,6 @@
         return (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
     }
 
-    // TODO play sound on complete
     // Run when pomodoro is completed
     function pomoComplete() {
         clearInterval(interval);

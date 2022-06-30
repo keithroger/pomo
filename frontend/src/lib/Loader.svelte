@@ -4,7 +4,6 @@
 
 <div class="bg">
     <div class="animation-container">
-        <!-- <div style="color: var(--text-on-bg);">Loading...</div> -->
 		<svg version="1.1" viewBox="0 0 100 100">
 			<circle id="background-circle" cx="50%" cy="50%" r="45"/>
         </svg>

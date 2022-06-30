@@ -8,8 +8,10 @@
     import { userAPI } from "$lib/requests.js"
     import { settings, isAuthenticated} from "$lib/store.js";
     import { setCSS } from "$lib/colors.js";
+    import { Auth } from "aws-amplify";
 
     // TODO change the way variables are reactive
+    // to make code easier to read
 
     let pomodoroInput = $settings.pomodoro.toString();
     let shortBreakInput = $settings.shortBreak.toString();
@@ -17,7 +19,7 @@
 
     const options = {
         theme: ["Default", "Shore", "Cold", "Slate", "Ocean", "Pumkin", "Pastel", "Night", "Pink", "Lettuce", "Purp", "Cream", "Little", "Cafe", "Contrast", "Eve"],
-        sound: ["8bit", "Bike", "Bowl", "Cathedral", "Coin", "Correct", "Ding", "Dingdong", "Hibell", "Lowbell", "Notify", "Peaceful", "Ping", "Pling"],
+        sound: ["Bell", "Bowl", "Pling", "Notify"],
         volume: ["Mute", "Low", "Medium", "High"],
     };
 
@@ -85,6 +87,18 @@
         currentVol = $settings.volume;
     }
 
+    // Delete user in userpool and db
+    async function deleteUser() {
+        try {
+            await userAPI("delete", "", null);
+            const result = await Auth.deleteUser();
+            window.location.href = "/";
+            console.log(result);
+        } catch (error) {
+            console.log('Error deleting user', error);
+        }
+    }
+
 
 </script>
 
@@ -150,19 +164,20 @@
     {#if $isAuthenticated }
     <h2>Danger Zone</h2>
 
-    <h3>Erase Statistics</h3>
+    <!-- TODO impliment these buttons -->
+    <!-- <h3>Erase Statistics</h3>
     <p>Erase all saved data, including task history.</p>
     <button class="danger-btn rounded">Erase</button>
 
     <h3>Reset Settings</h3>
     <p>Revert settings to the default state.</p>
-    <button class="danger-btn rounded">Reset</button>
+    <button class="danger-btn rounded">Reset</button> -->
 
     <h3>Delete Account</h3>
     <p>Delete you account and erase all associated data.</p>
     <button
         class="danger-btn rounded"
-        on:click={() => userAPI("delete", "", null)}>
+        on:click={deleteUser}>
         Delete
     </button>
     {/if}

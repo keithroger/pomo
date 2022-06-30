@@ -1,6 +1,5 @@
 <script>
-    import { userAPI } from "$lib/requests.js";
-    import { isAuthenticated, contentLoading, settings } from "$lib/store.js";
+    import { contentLoading } from "$lib/store.js";
     import { Auth } from "aws-amplify";
 
     let verificationCode = "";
@@ -17,14 +16,10 @@
         try {
             errorVisible = false;
             console.log("started confirmSignup");
-            await Auth.confirmSignUp(email, verificationCode);
+            await Auth.confirmSignUp(email, verificationCode)
             console.log("passed confirmSignup");
 
-            // Create User
-            // TODO user should be created with current settings
-            await userAPI("post", "", $settings);
-
-            isAuthenticated.set(true);
+            window.location.href = "/login?msg=verified";
 
         } catch (error) {
             errorMessage = "Error confirming sign up. Please try again.";

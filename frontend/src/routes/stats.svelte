@@ -36,9 +36,9 @@
 
     {#await getData() then resp}
 
-    {#if resp.lenght == 0}
+    {#if resp.errorMessage}
     <p>No data yet. Complete pomodoros to see some stats!</p>
-    {/if}
+    {:else}
     <!-- {#if $pomodoros.length > 0} -->
 
     <h3>Period of Time</h3>
@@ -49,15 +49,6 @@
         bind:selected={period}
         nPerRow=3
     />
-
-    <!-- bar graph -->
-    <!-- Just graph time spent doing pomodoros in given period -->
-    <!-- Ranges: Last Week, Last Month, Last Year(by Month), All Time(by Month) -->
-    <!-- Hours on the y axis -->
-
-    <!-- Avg Study Time by Weekday -->
-
-    <!-- Avg  study time by hour of the day -->
 
     {#key period}
     <Visualization data={resp[period]}/>
@@ -78,6 +69,7 @@
     </div>
 
 
+    {/if}
     {:catch error}
 
     {error}

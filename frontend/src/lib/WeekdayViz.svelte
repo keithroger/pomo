@@ -7,9 +7,6 @@
 	export let data;
 	console.log(data);
 
-	// TODO create weekday graph
-	console.log(data);
-
 	let viz;
 	let margin = {top: 10, right: 30, bottom: 30, left: 60},
     width = 580 - margin.left - margin.right,

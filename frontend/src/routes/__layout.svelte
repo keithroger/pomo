@@ -10,8 +10,6 @@
 	import { onMount } from "svelte";
 	import { Amplify, Auth } from "aws-amplify";
 
-	// TODO change favicon and using it for loading icon
-	
 	let loading = true;
 
 	onMount( async () => {
@@ -33,11 +31,16 @@
 
 		// Load users settings
 		if ($isAuthenticated) {
-			await userAPI("get", "/settings", null)
-			.then(resp => {
-                settings.set(resp);
-            })
-            .catch(error => console.log(error));
+			let getSettings = await userAPI("get", "/settings", null);
+            
+            // Initialize users settings if they are not defined
+            if (getSettings.pomodoro === undefined) {
+                getSettings = $settings;
+                await userAPI("post", "", $settings)
+                .catch(err => console.log(err));
+            } else {
+                settings.set(getSettings);
+            }
 		}
 
 		setCSS($settings.theme);
