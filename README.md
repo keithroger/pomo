@@ -1,4 +1,4 @@
-# POMO.STUDY
+# POMO.CAFE
 
 A study tool for using the pomodoro study technique. By default the study timer is set
 for 25 minutes but users can customize the length of time. Authenticated users can track their progress
