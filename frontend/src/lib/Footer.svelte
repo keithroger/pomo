@@ -3,7 +3,7 @@
 </script>
 
 <footer class="footer-container">
-    <span>Github</span>
+    <a href=https://github.com/keithroger/pomo>Github</a>
 </footer>
 
 <style>
@@ -12,6 +12,13 @@
         justify-content: center;
         padding: 1em;
         bottom: 0;
+    }
+
+    a, a:visited {
+        padding: 0;
+        margin: 0;
+        text-decoration: none;
+        color: var(--text-on-primary);
     }
 
 </style>
