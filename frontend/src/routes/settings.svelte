@@ -12,6 +12,7 @@
 
     // TODO change the way variables are reactive
     // to make code easier to read
+    // TODO add option for putting time in the tab title
 
     let pomodoroInput = $settings.pomodoro.toString();
     let shortBreakInput = $settings.shortBreak.toString();
@@ -33,6 +34,7 @@
         return false;
     }
 
+    // TODO dont autosave if input is not numeric
     // autosave
     let interval = null;
     function autosave() {

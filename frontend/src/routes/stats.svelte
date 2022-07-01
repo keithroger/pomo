@@ -10,6 +10,8 @@
     import WeekdayViz from "$lib/WeekdayViz.svelte";
     import { pomodoros, contentLoading } from "$lib/store.js";
 
+    // TODO make graph axis colors match text color so its visible on dark backgrounds
+
     // Time period selection for bar graph
     let period = "7 Days";
 
