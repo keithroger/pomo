@@ -38,10 +38,9 @@
 
     {#await getData() then resp}
 
-    {#if resp.errorMessage}
+    {#if Object.keys(resp).length == 0}
     <p>No data yet. Complete pomodoros to see some stats!</p>
     {:else}
-    <!-- {#if $pomodoros.length > 0} -->
 
     <h3>Period of Time</h3>
     <p>View the number of minutes studied in a given period.</p>
@@ -53,12 +52,13 @@
     />
 
     {#key period}
-    <Visualization data={resp[period]}/>
+    <Visualization data={resp.period[period]}/>
     {/key}
 
     <h3>Weekday Summary</h3>
     <p>The total minutes studied during the last 30 days, grouped by day of the week.</p>
-    <WeekdayViz data={resp.WeekdayData}/>
+    <!-- <WeekdayViz data={resp.WeekdayData}/> -->
+    <Visualization data={resp.weekDayData}/>
 
     <div class="grid">
         <!-- TODO convert to readable format such as 1d 2h 30m -->

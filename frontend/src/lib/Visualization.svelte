@@ -9,15 +9,6 @@
 
 	// TODO add y axis label
 
-	const parser = d3.timeParse("%Y-%m-%d");
-	data = data.map(d => {
-		return {
-			date: d.date.substring(6,7) + "/" + d.date.substring(8,10),
-			minutes: d.minutes,
-		}
-	});
-	console.log(data);
-
 	let viz;
 	let margin = {top: 10, right: 30, bottom: 60, left: 60},
     width = 580 - margin.left - margin.right,
@@ -32,7 +23,7 @@
 			.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 		let xScale = d3.scaleBand()
-			.domain(data.map(d => d.date))
+			.domain(data.map(d => d.x))
 			.range([0, width])
 			.padding(0.25);
 
@@ -46,7 +37,7 @@
             .attr("transform", "rotate(-65)" );
 
 		let yScale = d3.scaleLinear()
-			.domain([0, d3.max(data, d => d.minutes)])
+			.domain([0, d3.max(data, d => d.x)])
 			.range([ height, 0 ]);
 
     	svg.append("g")
@@ -67,10 +58,10 @@
 			.data(data)
 			.enter()
 			.append("rect")
-			.attr("x", d => xScale(d.date))
-			.attr("y", d => yScale(d.minutes))
+			.attr("x", d => xScale(d.x))
+			.attr("y", d => yScale(d.y))
 			.attr("width", xScale.bandwidth())
-			.attr("height", d => height - yScale(d.minutes))
+			.attr("height", d => height - yScale(d.y))
 			.attr("fill", palettes[$settings.theme].primary);
 	});
 </script>
