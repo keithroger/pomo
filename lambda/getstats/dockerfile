@@ -2,7 +2,7 @@ FROM golang:1.18 as build
 
 WORKDIR /app
 
-ADD main.go go.mod go.sum ./
+ADD main.go processing.go go.mod go.sum ./
 
 RUN ls
 
