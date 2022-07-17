@@ -59,9 +59,9 @@ type Period struct {
 
 // TODO look into returning a status code
 type Response struct {
-	PeriodData  Period
-	WeekDayData []BarDatum
-	Statistics  Stats
+    PeriodData  Period `json:"period"`
+    WeekDayData []BarDatum `json:"weekDayData"`
+    Statistics  Stats `json:"stats"`
 }
 
 var (
