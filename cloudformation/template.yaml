@@ -1,0 +1,146 @@
+AWSTemplateFormatVersion : '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Pomo.Cafe stack
+
+# TODO impliment everything simply with lambda proxy then add
+# mapping templates or step functions with cicd pipeline
+
+Resources:
+  RestApi:
+    Type: "AWS::Serverless::Api"
+    Properties:
+      StageName: Prod
+      Cors: "'*'"
+      #      DefinitionBody: # Pull in an OpenApi definition from S3
+      #        'Fn::Transform':
+      #          Name: 'AWS::Include'
+      #          # TODO Replace "bucket" with your bucket name
+      #          # figure out which s3 bucket to put this content
+      #          # TODOtry making the website with a mimal amount of swagger first
+      #          Parameters:
+      #            Location: !Sub
+      #              - s3://${!Ref bucket}/swagger.yaml
+      Auth:
+        # DefaultAuthorizer: MyCognitoAuthorizer
+        Authorizers:
+          MyCognitoAuthorizer:
+            UserPoolArn: !GetAtt UserPool.Arn
+  UserPool:
+    Type: "AWS::Cognito::UserPool"
+    Properties:
+      AutoVerifiedAttributes:
+        - email
+      Schema:
+        - Name: email
+          AttributeDataType: String
+          Mutable: false
+          Required: true
+
+  UserPoolClient:
+    Type: "AWS::Cognito::UserPoolClient"
+    Properties: 
+      UserPoolId: !Ref UserPool
+      SupportedIdentityProviders:
+        - COGNITO
+
+  GetUserStats:
+      Type: AWS::Serverless::Function
+      Description: Reads pomodoro data from DDB and calculates user stats
+      Properties:
+        Events:
+          ApiEvent:
+            Type: Api
+            Properties:
+              Path: /{username}/stats
+              Method: get
+              RestApiId: !Ref RestApi
+#          Ref: RestApi # try using !Ref RestApi
+        Runtime: python3.7
+        Handler: index.handler
+        InlineCode: |
+          def handler(event, context):
+              return {'body': 'Hello World!', 'statusCode': 200}
+        Policies:
+          - DynamoDBCrudPolicy:
+              TableName: !Ref PomodoroTable
+
+  StaticContentS3:
+    Type: "AWS::S3::Bucket"
+    DeletionPolicy: Delete
+
+  CloudFront:
+    Type: "AWS::CloudFront::Distribution"
+    Properties:
+      DistributionConfig:
+        Origins:
+          - DomainName: !Sub "${StaticContentS3}.s3.amazonaws.com"
+            Id: !Ref StaticContentS3
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${CloudFrontOAI}"
+        Enabled: 'true'
+        DefaultRootObject: index.html
+        Aliases:
+          - dev.pomo.cafe # TODO remove
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+          CachedMethods:
+            - GET
+            - HEAD
+          ViewerProtocolPolicy: redirect-to-https
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+          TargetOriginId: !Ref StaticContentS3
+        PriceClass: PriceClass_All
+        ViewerCertificate:
+          AcmCertificateArn: !Sub "arn:aws:acm:us-east-1:${AWS::AccountId}:certificate/3d1d7a27-16fc-4edf-8a58-e97e7783afff"
+          # CloudFrontDefaultCertificate: false
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2021
+
+
+  CloudFrontOAI:
+    Type: "AWS::CloudFront::CloudFrontOriginAccessIdentity"
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: S3 CloudFront OAI
+
+  PomodoroTable:
+    Description: DDB table that stores completed pomodoros
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: Id
+          AttributeType: S
+        - AttributeName: Timestamp
+          AttributeType: N
+      KeySchema:
+        - AttributeName: Id
+          KeyType: HASH
+        - AttributeName: Timestamp
+          KeyType: RANGE
+
+  SettingsTable:
+    Description: DDB table that stores user settings
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: Id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: Id
+          KeyType: HASH
+
+Outputs:
+  UserPoolId:
+    Value: !Ref UserPool
+  UserPoolClientId:
+    Value: !Ref UserPoolClient
+
+  PomodoroTable:
+    Value: !Ref PomodoroTable
+
+  SettingsTable:
+    Value: !Ref SettingsTable
